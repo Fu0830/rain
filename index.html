@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>茉莉 雨</title>
+<meta name="description" content="一个蓝色水波感的四段式叙事小站，结构与交互可自由替换文案。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M2 18c4-5 8-5 12 0s8 5 12 0' fill='none' stroke='%232f6f8f' stroke-width='2.4' stroke-linecap='round'/%3E%3Cpath d='M2 24c4-5 8-5 12 0s8 5 12 0' fill='none' stroke='%237fb7cc' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://miaoda.feishu.cn">
+<link rel="preconnect" href="https://sf3-scmcdn-cn.feishucdn.com" crossorigin>
+<link rel="stylesheet" href="https://miaoda.feishu.cn/fonts/css2?family=Noto+Serif+SC:wght@400;600&amp;display=swap">
+<style>
+  /* ============ 设计令牌：蓝色系水波 ============ */
+  :root{
+    --sea-deep:#12324a;
+    --sea:#1f5573;
+    --sea-mid:#3f7f9c;
+    --foam:#eaf4f7;
+    --foam-soft:#d6e9ef;
+    --ink:#17364a;
+    --ink-soft:#46687c;
+    --accent:#2f8fa8;
+    --accent-deep:#1f6f86;
+    --line:rgba(31,85,115,.22);
+    --card:rgba(255,255,255,.55);
+    --shadow:0 18px 40px rgba(18,50,74,.18);
+    --songti:"Noto Serif SC","Source Han Serif SC","Source Han Serif CN","Noto Serif CJK SC","Songti SC","STSong",Georgia,"Times New Roman",serif;
+    --serif:var(--songti);
+    --sans:var(--songti);
+    --mono:var(--songti);
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0}
+  button,input,textarea,select{font-family:inherit}
+  html,body{height:100%}
+  body{
+    font-family:var(--sans);
+    color:var(--ink);
+    background:linear-gradient(168deg,#0f2c42 0%,#1f5573 46%,#3f7f9c 100%);
+    min-height:100vh;
+    overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  /* 背景视频：整屏铺满 + 模糊处理，循环静音播放 */
+  .bg-video{
+    position:fixed;inset:0;z-index:0;
+    width:100%;height:100%;
+    object-fit:cover;
+    filter:blur(4px) brightness(.88) saturate(1.05);
+    transform:scale(1.05);
+  }
+  /* 深色遮罩：压暗背景，保证前景文字可读 */
+  .bg-shade{
+    position:fixed;inset:0;z-index:2;
+    background:linear-gradient(180deg,rgba(8,22,34,.46) 0%,rgba(8,22,34,.30) 45%,rgba(8,22,34,.52) 100%);
+  }
+
+  .wrap{
+    position:relative;z-index:3;
+    min-height:100vh;
+    display:flex;flex-direction:column;
+    max-width:1080px;margin:0 auto;
+    padding:clamp(20px,5vw,56px) clamp(18px,5vw,48px);
+  }
+
+  /* ============ 顶栏（固定钉顶，滚动不移动） ============ */
+  header.topbar{
+    position:fixed;top:0;left:0;right:0;z-index:20;
+    max-width:1080px;margin:0 auto;
+    display:flex;justify-content:space-between;align-items:center;
+    gap:16px;
+    padding:clamp(20px,5vw,56px) clamp(18px,5vw,48px) 0;
+    color:var(--foam);
+    font-family:var(--mono);
+    font-size:12px;letter-spacing:.14em;
+  }
+  header.topbar .brand{opacity:.9}
+  header.topbar .index{opacity:.75}
+
+  /* ============ 视图切换 ============ */
+  main{flex:1;display:flex;flex-direction:column;justify-content:center;padding:clamp(64px,10vh,92px) 0 clamp(28px,6vh,56px)}
+  .view{display:none;animation:viewIn .55s cubic-bezier(.22,1,.36,1)}
+  .view.active{display:block}
+  @keyframes viewIn{
+    from{opacity:0;transform:translateY(18px)}
+    to{opacity:1;transform:translateY(0)}
+  }
+
+  /* ============ 首页 ============ */
+  .hero{color:var(--foam)}
+  .hero .eyebrow{
+    font-family:var(--mono);font-size:12px;letter-spacing:.28em;
+    text-transform:uppercase;opacity:.8;margin-bottom:22px;
+  }
+  .hero h1{
+    font-family:var(--serif);
+    font-weight:600;
+    font-size:clamp(40px,9vw,84px);
+    line-height:1.08;
+    letter-spacing:.02em;
+  }
+  .hero h1 .cn{
+    display:block;
+    font-size:clamp(22px,4.5vw,36px);
+    margin-top:14px;
+    opacity:.85;letter-spacing:.18em;
+  }
+  .hero .intro{
+    margin-top:26px;max-width:46ch;
+    font-family:var(--serif);
+    font-size:clamp(15px,2.2vw,18px);
+    line-height:1.9;opacity:.9;
+  }
+  .hero .intro em{font-style:italic;opacity:.8}
+
+  .trace-label{
+    margin-top:clamp(30px,5vh,44px);
+    display:flex;align-items:baseline;gap:14px;
+    color:var(--foam-soft);
+  }
+  .trace-label .zh{font-family:var(--serif);letter-spacing:.2em;font-size:15px}
+  .trace-label .en{font-family:var(--mono);font-size:12px;letter-spacing:.22em;opacity:.7}
+  .trace-label .rule{flex:1;height:1px;background:var(--line)}
+
+  /* 四段入口 */
+  .traces{
+    margin-top:22px;
+    display:grid;
+    grid-template-columns:1fr;
+    gap:14px;
+  }
+  @media(min-width:680px){
+    .traces{grid-template-columns:repeat(2,1fr);gap:18px}
+  }
+  .trace{
+    position:relative;
+    text-align:left;cursor:pointer;
+    background:linear-gradient(135deg,rgba(255,255,255,.14) 0%,rgba(255,255,255,.05) 55%,rgba(127,183,204,.08) 100%);
+    border:1px solid rgba(255,255,255,.18);
+    border-radius:20px;
+    padding:22px 22px 20px;
+    color:var(--foam);
+    backdrop-filter:blur(16px) saturate(1.3) brightness(1.06);
+    -webkit-backdrop-filter:blur(16px) saturate(1.3) brightness(1.06);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.22),
+      inset 0 -1px 0 rgba(8,22,34,.18),
+      0 12px 30px rgba(8,22,34,.28);
+    overflow:hidden;
+    transition:transform .3s cubic-bezier(.22,1,.36,1),box-shadow .3s,border-color .3s,background .3s;
+    font:inherit;
+  }
+  /* 顶部玻璃高光 */
+  .trace::before{
+    content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+    background:linear-gradient(180deg,rgba(255,255,255,.16) 0%,rgba(255,255,255,0) 38%);
+  }
+  .trace:hover,.trace:focus-visible{
+    transform:translateY(-4px);
+    border-color:rgba(255,255,255,.32);
+    background:linear-gradient(135deg,rgba(255,255,255,.18) 0%,rgba(255,255,255,.07) 55%,rgba(127,183,204,.12) 100%);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.28),
+      inset 0 -1px 0 rgba(8,22,34,.18),
+      0 18px 40px rgba(8,22,34,.34);
+  }
+  .trace:focus-visible{outline:2px solid var(--foam);outline-offset:3px}
+  .trace .num{
+    font-family:var(--mono);font-size:12px;letter-spacing:.18em;
+    color:#8fcddd;
+  }
+  .trace .title{
+    margin-top:10px;
+    font-family:var(--serif);
+    font-size:clamp(20px,2.6vw,24px);
+    font-weight:600;color:var(--foam);
+  }
+  .trace .title .en{display:block;font-family:var(--mono);font-size:12px;letter-spacing:.16em;color:var(--foam-soft);margin-top:4px;font-weight:400}
+  .trace .desc{margin-top:10px;font-size:14px;line-height:1.7;color:rgba(234,244,247,.78)}
+
+  /* ============ 片段详情页 ============ */
+  .detail{
+    color:var(--foam);max-width:640px;margin:0 auto;text-align:left;
+    padding-top:clamp(20px,5vh,40px);
+    padding-bottom:clamp(90px,24vh,240px);
+  }
+  .detail .back{
+    display:inline-flex;align-items:center;gap:8px;
+    background:none;border:none;cursor:pointer;
+    color:var(--foam-soft);font-family:var(--mono);font-size:12px;letter-spacing:.18em;
+    padding:8px 0;margin-bottom:26px;
+  }
+  .detail .back:hover{color:#fff}
+  .detail .back svg{width:16px;height:16px}
+  .detail .meta{
+    font-family:var(--mono);font-size:12px;letter-spacing:.22em;opacity:.75;
+  }
+  .detail h2{
+    margin-top:14px;
+    font-family:var(--serif);
+    font-size:clamp(30px,6vw,46px);font-weight:600;line-height:1.15;
+  }
+  .detail h2 .en{display:block;font-family:var(--mono);font-size:13px;letter-spacing:.2em;opacity:.7;margin-top:8px;font-weight:400}
+  .detail .body{
+    margin-top:26px;
+    font-family:var(--serif);
+    font-size:clamp(16px,2.4vw,19px);
+    line-height:2;opacity:.92;
+  }
+  .detail .body p,
+  .detail .body .photo{
+    margin-bottom:16px;
+    opacity:0;transform:translateY(18px);
+    transition:opacity .6s ease,transform .6s cubic-bezier(.22,1,.36,1);
+  }
+  .detail .body p.in,
+  .detail .body .photo.in{opacity:1;transform:translateY(0)}
+  .detail .body em{font-style:italic;opacity:.8}
+
+  .photo-grid{display:grid;grid-template-columns:1fr;gap:18px;margin-top:6px}
+  .photo{margin:0;overflow:hidden;border-radius:14px;border:1px solid rgba(255,255,255,.16)}
+  .photo img{
+    width:100%;aspect-ratio:16/9;object-fit:cover;display:block;
+    cursor:zoom-in;transition:transform .5s cubic-bezier(.22,1,.36,1);
+  }
+  .photo img:hover{transform:scale(1.05)}
+
+  #lightbox{
+    position:fixed;inset:0;z-index:60;background:rgba(6,18,28,.92);
+    display:none;align-items:center;justify-content:center;padding:24px;
+    cursor:zoom-out;
+  }
+  #lightbox.open{display:flex}
+  #lightbox img{max-width:100%;max-height:100%;object-fit:contain;border-radius:10px}
+
+  @media (prefers-reduced-motion:reduce){
+    .detail .body p,
+    .detail .body .photo{opacity:1;transform:none;transition:none}
+  }
+
+
+  /* ============ 手机端适配（≤600px） ============ */
+  @media (max-width:600px){
+    .wrap{
+      padding:calc(18px + env(safe-area-inset-top)) 18px calc(18px + env(safe-area-inset-bottom));
+    }
+    main{ padding:calc(56px + env(safe-area-inset-top)) 0 18px; justify-content:flex-start; }
+    header.topbar{ font-size:11px; letter-spacing:.12em; }
+
+    .hero .eyebrow{ margin-bottom:14px; letter-spacing:.22em; }
+    .hero h1{ font-size:32px; line-height:1.12; }
+    .hero .intro{ margin-top:18px; font-size:15px; line-height:1.8; }
+
+    .trace-label{ margin-top:26px; }
+    .traces{ margin-top:16px; gap:12px; }
+    .trace{ padding:18px 18px 16px; border-radius:16px; }
+    .trace .title{ font-size:19px; }
+    .trace .desc{ margin-top:8px; font-size:13.5px; line-height:1.65; }
+
+    .detail .back{
+      min-height:44px; margin-bottom:18px; gap:10px;
+    }
+    .detail h2{ font-size:28px; }
+    .detail .body{ margin-top:18px; font-size:16px; line-height:1.9; }
+  }
+
+  /* ============ 开屏：雾玻璃擦雾 ============ */
+  #mist-living-water{
+    position:fixed;inset:0;z-index:50;overflow:hidden;
+    opacity:1;transition:opacity .45s ease;
+    background:linear-gradient(180deg,#5f86c4 0%,#8fb4e6 52%,#5b7fb8 100%);
+  }
+  #mist-living-water.leaving{opacity:0;pointer-events:none}
+  #mist-living-water .alw-screen{position:relative;width:100%;height:100%;overflow:hidden;isolation:isolate}
+  #mist-living-water .alw-wipe{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;z-index:1}
+  #mist-living-water .alw-title{
+    position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    padding:0 28px;color:#fff;text-align:center;z-index:3;pointer-events:none;
+    font:300 clamp(22px,5.5vw,32px)/1.7 var(--serif);letter-spacing:.14em;
+    text-shadow:0 2px 16px rgba(13,48,87,.6);
+    animation:titleBounce 2.6s ease-in-out infinite;
+  }
+  #mist-living-water .alw-skip{
+    position:absolute;right:18px;bottom:calc(20px + env(safe-area-inset-bottom));z-index:4;
+    background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.35);
+    color:#fff;font-family:var(--serif);font-size:13px;letter-spacing:.12em;
+    padding:9px 16px;border-radius:999px;cursor:pointer;
+    opacity:0;pointer-events:none;transition:opacity .3s ease;
+    backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+  }
+  #mist-living-water .alw-skip.show{opacity:.92;pointer-events:auto}
+  @keyframes titleBounce{
+    0%,100%{transform:translateY(0) scale(1)}
+    30%{transform:translateY(-9px) scale(1.05)}
+    55%{transform:translateY(1px) scale(.985)}
+    75%{transform:translateY(-4px) scale(1.02)}
+  }
+  #mist-living-water .alw-title .ch{
+    display:inline-block;
+    transition:transform .7s cubic-bezier(.22,1,.36,1),opacity .7s ease,filter .7s ease;
+  }
+  #mist-living-water .alw-title.burst{animation:none}
+  #mist-living-water .alw-title.burst .ch{
+    transform:translate(var(--dx,0),var(--dy,0)) rotate(var(--rot,0deg));
+    opacity:0;filter:blur(6px);
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .view{animation:none}
+    .trace{transition:none}
+  }
+</style>
+</head>
+<body>
+<!-- ===== 开屏：轻触进入 → 自动播放擦雾视频 ===== -->
+<div id="mist-living-water">
+  <div class="alw-screen">
+    <video class="alw-wipe" id="wipeVideo" src="assets/splash-wipe.mp4" muted playsinline preload="auto" poster="assets/splash-poster.jpg" aria-hidden="true"></video>
+    <div class="alw-title" id="mistTitle">-轻触进入小林的世界-</div>
+    <button class="alw-skip" id="skipBtn" type="button" aria-label="跳过开屏动画">跳过</button>
+  </div>
+</div>
+<audio id="bgAudio" src="assets/bg-audio.m4a" loop preload="auto" aria-hidden="true"></audio>
+
+<video class="bg-video" src="assets/bg-rain.mp4" autoplay muted loop playsinline preload="auto" aria-hidden="true"></video>
+<div class="bg-shade" aria-hidden="true"></div>
+
+<div id="lightbox" aria-hidden="true"><img id="lightboxImg" src="" alt="完整影像"></div>
+<img src="assets/rain-window.jpg" alt="" aria-hidden="true" style="display:none">
+
+<div class="wrap">
+  <header class="topbar">
+    <span class="brand">垂柳斜向</span>
+  </header>
+
+  <main>
+    <!-- ===== 首页视图 ===== -->
+    <section class="view active" id="view-home">
+      <div class="hero">
+        <div class="eyebrow">轻弹一首别离名为</div>
+        <h1>
+          茉莉 雨
+        </h1>
+        <p class="intro">
+          轻弹一首别离 还在爱你，
+          <br>缘分竟然默许你离去。
+        </p>
+
+        <div class="trace-label">
+          <span class="zh">选择一个片段</span>
+          <span class="rule"></span>
+        </div>
+
+        <nav class="traces" id="traceList" aria-label="片段列表"></nav>
+      </div>
+    </section>
+
+    <!-- ===== 片段详情视图（内容由 JS 注入） ===== -->
+    <section class="view" id="view-detail">
+      <article class="detail">
+        <button class="back" id="backBtn" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+          返回
+        </button>
+        <div class="meta" id="detailMeta"></div>
+        <h2 id="detailTitle"></h2>
+        <div class="body" id="detailBody"></div>
+      </article>
+    </section>
+  </main>
+
+</div>
+
+<script>
+/* ============ 文案数据：改这里即可替换全部文字 ============ */
+const TRACES = [
+  {
+    id:"01",
+    zh:"个人须知",
+    en:"关于我",
+    desc:"一段留在信号里的旋律，替没有说出口的部分发声。",
+    body:[
+      "小林｜天秤座｜ENTP",
+      "<em>喜点</em>",
+      "1. 温青，嘴甜会哄人且心态好的",
+      "2. 我被骂了马上骂回去并安慰我",
+      "3. 会让蓝让龙，带我刷牌子",
+      "4. 会注意我的动向，告诉我下一步怎么做（非指挥语气！）",
+      "5. 谢礼真诚，不套公式",
+      "6. 跟我玩的时候玩帅帅的英雄，例如：镜、澜、公孙离等",
+      "<em>雷点</em>",
+      "1. 称呼带板/单字姐",
+      "2. 杀熟 对我不上心 混单 记混老板",
+      "3. 谢礼敷衍",
+      "4. 死了甩锅，局内和我没互动",
+      "5. 迟到，预约单需要我给时间你借号的"
+    ]
+  },
+  {
+    id:"02",
+    zh:"信笺",
+    en:"记忆",
+    desc:"不是一具身体，而是一种回应；关于被记住的方式。",
+    body:[
+      "（片段二正文 · 可替换）",
+      "<em>不是躯体，而是回应。</em>",
+      "两段信号之间的空隙里，藏着我们对彼此的全部理解。"
+    ]
+  },
+  {
+    id:"03",
+    zh:"相册",
+    en:"影像",
+    desc:"在你的声音之后，画面仍在缓缓展开。",
+    body:[
+      "<em>在你的声音之后——</em>",
+      "每一帧都停在将要被想起的瞬间，光与水一起留在纸上。"
+    ],
+    photos:[
+      "assets/rain-window.jpg",
+      "assets/rain-window.jpg",
+      "assets/rain-window.jpg"
+    ]
+  },
+  {
+    id:"04",
+    zh:"伴手礼",
+    en:"礼物",
+    desc:"那些还没有说出口的话，仍在被安静地倾听。",
+    body:[
+      "<em>那些未曾说出口的话。</em>",
+      "信封没有封口，收件人是未来某个愿意读完它的人。"
+    ],
+    photos:[
+      "assets/rain-window.jpg",
+      "assets/rain-window.jpg",
+      "assets/rain-window.jpg"
+    ]
+  }
+];
+
+/* ============ 视图路由 ============ */
+const homeView = document.getElementById("view-home");
+const detailView = document.getElementById("view-detail");
+const traceList = document.getElementById("traceList");
+const detailMeta = document.getElementById("detailMeta");
+const detailTitle = document.getElementById("detailTitle");
+const detailBody = document.getElementById("detailBody");
+
+function renderList(){
+  traceList.innerHTML = "";
+  TRACES.forEach((t,i)=>{
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "trace";
+    btn.setAttribute("aria-label","打开片段 " + t.id + " " + t.zh);
+    btn.innerHTML =
+      '<span class="num">[' + t.id + "*]</span>" +
+      '<span class="title">' + t.zh + '<span class="en">' + t.en + "</span></span>" +
+      '<span class="desc">' + t.desc + "</span>";
+    btn.addEventListener("click",()=>openTrace(i));
+    traceList.appendChild(btn);
+  });
+}
+
+function show(view){
+  homeView.classList.toggle("active", view === "home");
+  detailView.classList.toggle("active", view === "detail");
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+let bodyObserver=null;
+function observeBody(){
+  const items=detailBody.querySelectorAll('p, .photo');
+  if(bodyObserver) bodyObserver.disconnect();
+  bodyObserver=new IntersectionObserver(entries=>{
+    entries.forEach(e=>{
+      e.target.classList.toggle('in', e.isIntersecting);
+    });
+  },{root:null,threshold:0,rootMargin:'-16% 0px -26% 0px'});
+  items.forEach(el=>bodyObserver.observe(el));
+}
+function openTrace(i){
+  const t = TRACES[i];
+  detailMeta.textContent = "[" + t.id + "*] — " + t.en;
+  detailTitle.textContent = t.zh;
+  const paras = t.body.map(p=>"<p>" + p + "</p>").join("");
+  const photos = (t.photos||[]).map((src,idx)=>
+    '<figure class="photo"><img src="' + src + '" alt="影像 ' + (idx+1) + '" data-full="' + src + '"></figure>'
+  ).join("");
+  detailBody.innerHTML = paras + (photos ? '<div class="photo-grid">' + photos + '</div>' : "");
+  show("detail");
+  observeBody();
+}
+
+document.getElementById("backBtn").addEventListener("click",()=>{
+  show("home");
+});
+
+/* 图片灯箱：点击缩略图查看完整图 */
+const lightbox=document.getElementById('lightbox');
+const lightboxImg=document.getElementById('lightboxImg');
+detailBody.addEventListener('click',e=>{
+  const img=e.target.closest('img[data-full]');
+  if(!img)return;
+  lightboxImg.src=img.dataset.full;
+  lightbox.classList.add('open');
+});
+lightbox.addEventListener('click',()=>{
+  lightbox.classList.remove('open');
+  lightboxImg.src='';
+});
+
+renderList();
+
+/* ============ 背景视频自动播放兜底（兼容微信内置浏览器） ============ */
+const bgVideo = document.querySelector('.bg-video');
+if (bgVideo){
+  bgVideo.muted = true;
+  bgVideo.defaultMuted = true;
+  const tryPlay = () => {
+    if (bgVideo.play) bgVideo.play().catch(()=>{});
+  };
+  // 元数据就绪 / 可播放后主动尝试
+  ['loadedmetadata','canplay'].forEach(ev=>bgVideo.addEventListener(ev, tryPlay, {once:true}));
+  // 页面加载即注册手势恢复：不依赖 pause 事件是否被触发，
+  // 冷启动被拦截时，首次点按/触摸即可在手势上下文里恢复播放
+  const resume = ()=>tryPlay();
+  ['pointerdown','touchstart','click','touchend'].forEach(ev=>
+    window.addEventListener(ev, resume, {passive:true}));
+  // 被暂停（后台切走、策略拦截）时再次确保手势可恢复
+  bgVideo.addEventListener('pause', resume);
+  // 从后台切回页面时恢复
+  document.addEventListener('visibilitychange', ()=>{
+    if (!document.hidden) tryPlay();
+  });
+  tryPlay();
+}
+</script>
+
+<script>
+/* ============ 开屏：轻触进入 → 自动播放擦雾视频 → 进入主页 ============ */
+(()=>{
+  const root=document.getElementById('mist-living-water');
+  const title=root.querySelector('.alw-title');
+  const video=document.getElementById('wipeVideo');
+  const bgAudio=document.getElementById('bgAudio');
+  const skipBtn=document.getElementById('skipBtn');
+  let entered=false, started=false, fallbackTimer=null;
+
+  /* 标题拆字，供点击后粒子弥散 */
+  function splitTitle(){
+    const text=title.textContent.trim();
+    title.textContent='';
+    [...text].forEach(ch=>{
+      const s=document.createElement('span');
+      s.className='ch';s.textContent=ch;title.appendChild(s);
+    });
+  }
+  function burstTitle(){
+    const chars=title.querySelectorAll('.ch');
+    chars.forEach(s=>{
+      const ang=Math.random()*Math.PI*2, dist=42+Math.random()*72;
+      s.style.setProperty('--dx',(Math.cos(ang)*dist).toFixed(1)+'px');
+      s.style.setProperty('--dy',(Math.sin(ang)*dist-22).toFixed(1)+'px');
+      s.style.setProperty('--rot',(Math.random()*40-20).toFixed(1)+'deg');
+      s.style.transitionDelay=(Math.random()*0.15).toFixed(2)+'s';
+    });
+    title.classList.add('burst');
+  }
+  splitTitle();
+
+  function enterSplash(){
+    if(entered)return;
+    entered=true;
+    if(fallbackTimer){clearTimeout(fallbackTimer);fallbackTimer=null;}
+    window.dispatchEvent(new CustomEvent('mist:enter'));
+  }
+  function start(){
+    if(started)return;
+    started=true;
+    burstTitle();
+    // 首次手势上下文启动背景音乐循环
+    if(bgAudio){bgAudio.loop=true;bgAudio.play().catch(()=>{});}
+    // 播放擦雾视频（静音、不循环）
+    if(video){video.muted=true;const p=video.play();if(p&&p.catch)p.catch(()=>{});}
+    if(skipBtn)skipBtn.classList.add('show');
+    // 兜底：视频 ended 未触发时按时长自动进入主页
+    fallbackTimer=setTimeout(enterSplash,4200);
+  }
+  ['pointerdown','click'].forEach(ev=>root.addEventListener(ev,start,{passive:true}));
+  if(skipBtn){
+    skipBtn.addEventListener('click',e=>{
+      e.stopPropagation();
+      enterSplash();
+    });
+  }
+  if(video){
+    video.addEventListener('ended',enterSplash);
+    video.addEventListener('error',enterSplash);
+  }
+  // 音频被策略拦截时，后续任意手势再试一次
+  const retryAudio=()=>{if(bgAudio&&bgAudio.paused)bgAudio.play().catch(()=>{})};
+  ['pointerdown','touchstart','click'].forEach(ev=>window.addEventListener(ev,retryAudio,{passive:true}));
+
+  window.mistSplashStop=()=>{if(fallbackTimer){clearTimeout(fallbackTimer);fallbackTimer=null;}};
+
+  /* 进入主页：停止开屏，淡出后移除覆盖层 */
+  window.addEventListener('mist:enter',()=>{
+    window.mistSplashStop?.();
+    root.classList.add('leaving');
+    setTimeout(()=>{root.style.display='none';},460);
+  },{once:true});
+})();
+</script>
+</body>
+</html>
